@@ -57,6 +57,7 @@ import org.mobicents.protocols.ss7.tools.simulator.tests.cap.TestCapScfManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.cap.TestCapSsfManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiClientManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiServerManMBean;
+import org.mobicents.protocols.ss7.tools.simulator.tests.lu.TestLuServerManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsClientManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsServerManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.ussd.TestUssdClientManMBean;
@@ -73,6 +74,8 @@ import org.mobicents.protocols.ss7.tools.simulatorgui.tests.checkimei.TestCheckI
 import org.mobicents.protocols.ss7.tools.simulatorgui.tests.checkimei.TestCheckImeiClientParamForm;
 import org.mobicents.protocols.ss7.tools.simulatorgui.tests.checkimei.TestCheckImeiServerForm;
 import org.mobicents.protocols.ss7.tools.simulatorgui.tests.checkimei.TestCheckImeiServerParamForm;
+import org.mobicents.protocols.ss7.tools.simulatorgui.tests.lu.TestLuServerForm;
+import org.mobicents.protocols.ss7.tools.simulatorgui.tests.lu.TestLuServerParamForm;
 import org.mobicents.protocols.ss7.tools.simulatorgui.tests.sms.TestSmsClientForm;
 import org.mobicents.protocols.ss7.tools.simulatorgui.tests.sms.TestSmsClientParamForm;
 import org.mobicents.protocols.ss7.tools.simulatorgui.tests.sms.TestSmsServerForm;
@@ -110,6 +113,7 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
     private TestAtiServerManMBean atiServer;
     private TestCheckImeiClientManMBean checkImeiClient;
     private TestCheckImeiServerManMBean checkImeiServer;
+    private TestLuServerManMBean luServer;
 
     private TestingForm testingForm;
 
@@ -349,6 +353,11 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
                         frame.setVisible(true);
                     }
                         break;
+                    case Instance_TestTask.VAL_LU_TEST_SERVER: {
+                        TestLuServerParamForm frame = new TestLuServerParamForm(getJFrame());
+                        frame.setData(luServer);
+                        frame.setVisible(true);
+                    }
 
                 // TODO: other tests form options editing
                 }
@@ -435,6 +444,12 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
                 dlg = testCheckImeiServerForm;
             }
                 break;
+            case Instance_TestTask.VAL_LU_TEST_SERVER: {
+                TestLuServerForm testLuServerForm = new TestLuServerForm(getJFrame());
+                testLuServerForm.setData(luServer);
+                dlg = testLuServerForm;
+            }
+            break;
 
         // TODO: other tests form options editing
         }
@@ -476,7 +491,7 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
             SccpManMBean sccp, MapManMBean map, CapManMBean cap, TestUssdClientManMBean ussdClient, TestUssdServerManMBean ussdServer,
             TestSmsClientManMBean smsClient, TestSmsServerManMBean smsServer, TestCapScfManMBean capScf, TestCapSsfManMBean capSsf,
             TestAtiClientManMBean atiClient, TestAtiServerManMBean atiServer,
-            TestCheckImeiClientManMBean checkImeiClient, TestCheckImeiServerManMBean checkImeiServer) {
+            TestCheckImeiClientManMBean checkImeiClient, TestCheckImeiServerManMBean checkImeiServer, TestLuServerManMBean luServer) {
         setTitle(getTitle() + appName);
 
         this.hostImpl = hostImpl;
@@ -497,6 +512,7 @@ public class SimulatorGuiForm extends JFrame implements NotificationListener {
         this.checkImeiClient = checkImeiClient;
         this.checkImeiServer = checkImeiServer;
         this.isRemote = isRemote;
+        this.luServer = luServer;
 
         this.btTermRemote.setEnabled(isRemote);
 

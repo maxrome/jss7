@@ -64,6 +64,7 @@ import org.mobicents.protocols.ss7.tools.simulator.tests.cap.TestCapSsfMan;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiClientConfigurationData;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiClientMan;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiServerMan;
+import org.mobicents.protocols.ss7.tools.simulator.tests.lu.TestLuServerMan;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.NumberingPlanIdentificationType;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsClientConfigurationData_OldFormat;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsClientMan;
@@ -130,6 +131,7 @@ public class TesterHost extends NotificationBroadcasterSupport implements Tester
     TestAtiServerMan testAtiServerMan;
     TestCheckImeiClientMan testCheckImeiClientMan;
     TestCheckImeiServerMan testCheckImeiServerMan;
+    TestLuServerMan testLuServerMan;
 
     // testers
 
@@ -181,6 +183,9 @@ public class TesterHost extends NotificationBroadcasterSupport implements Tester
 
         this.testCheckImeiServerMan = new TestCheckImeiServerMan(appName);
         this.testCheckImeiServerMan.setTesterHost(this);
+
+        this.testLuServerMan = new TestLuServerMan(appName);
+        this.testLuServerMan.setTesterHost(this);
 
         this.setupLog4j(appName);
 
@@ -277,6 +282,8 @@ public class TesterHost extends NotificationBroadcasterSupport implements Tester
     public TestCheckImeiServerMan getTestCheckImeiServerMan() {
         return this.testCheckImeiServerMan;
     }
+
+    public TestLuServerMan getTestLuServerMan() { return this.testLuServerMan; }
 
     private void setupLog4j(String appName) {
 
@@ -672,6 +679,17 @@ public class TesterHost extends NotificationBroadcasterSupport implements Tester
                     this.instance_TestTask_B = this.testCheckImeiServerMan;
                     this.testCheckImeiServerMan.setMapMan(curMap);
                     started = this.testCheckImeiServerMan.start();
+                }
+                break;
+
+            case Instance_TestTask.VAL_LU_TEST_SERVER:
+                if (curMap == null) {
+                    this.sendNotif(TesterHost.SOURCE_NAME, "Error initializing SMS_TEST_SERVER: No MAP stack is defined at L3",
+                            "", Level.WARN);
+                } else {
+                    this.instance_TestTask_B = this.testLuServerMan;
+                    this.testLuServerMan.setMapMan(curMap);
+                    started = this.testLuServerMan.start();
                 }
                 break;
 

@@ -40,6 +40,7 @@ import org.mobicents.protocols.ss7.tools.simulator.tests.cap.TestCapScfConfigura
 import org.mobicents.protocols.ss7.tools.simulator.tests.cap.TestCapSsfConfigurationData;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiClientConfigurationData;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiServerConfigurationData;
+import org.mobicents.protocols.ss7.tools.simulator.tests.lu.TestLuServerConfigurationData;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsClientConfigurationData;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsServerConfigurationData;
 import org.mobicents.protocols.ss7.tools.simulator.tests.ussd.TestUssdClientConfigurationData;
@@ -94,6 +95,7 @@ public class ConfigurationData {
     private TestAtiServerConfigurationData testAtiServerConfigurationData = new TestAtiServerConfigurationData();
     private TestCheckImeiClientConfigurationData testCheckImeiClientConfigurationData = new TestCheckImeiClientConfigurationData();
     private TestCheckImeiServerConfigurationData testCheckImeiServerConfigurationData = new TestCheckImeiServerConfigurationData();
+    private TestLuServerConfigurationData testLuServerConfigurationData = new TestLuServerConfigurationData();
 
     public Instance_L1 getInstance_L1() {
         return instance_L1;
@@ -245,6 +247,14 @@ public class ConfigurationData {
 
     public void setTestCheckImeiServerConfigurationData(TestCheckImeiServerConfigurationData testCheckImeiServerConfigurationData) {
         this.testCheckImeiServerConfigurationData = testCheckImeiServerConfigurationData;
+    }
+
+    public TestLuServerConfigurationData getTestLuServerConfigurationData() {
+        return testLuServerConfigurationData;
+    }
+
+    public void setTestLuServerConfigurationData(TestLuServerConfigurationData testLuServerConfigurationData) {
+        this.testLuServerConfigurationData = testLuServerConfigurationData;
     }
 
     /**

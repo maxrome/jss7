@@ -60,6 +60,7 @@ import org.mobicents.protocols.ss7.tools.simulator.tests.cap.TestCapScfManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.cap.TestCapSsfManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiClientManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiServerManMBean;
+import org.mobicents.protocols.ss7.tools.simulator.tests.lu.TestLuServerManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsClientManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsServerManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.ussd.TestUssdClientManMBean;
@@ -179,7 +180,7 @@ public class ConnectionForm extends JFrame {
         frame.startHost(appName + "-local", false, host, host, host.getM3uaMan(), host.getDialogicMan(), host.getSccpMan(),
                 host.getMapMan(), host.getCapMan(), host.getTestUssdClientMan(), host.getTestUssdServerMan(),
                 host.getTestSmsClientMan(), host.getTestSmsServerMan(), host.getTestCapScfMan(), host.getTestCapSsfMan(),
-                host.getTestAtiClientMan(), host.getTestAtiServerMan(), host.getTestCheckImeiClientMan() , host.getTestCheckImeiServerMan());
+                host.getTestAtiClientMan(), host.getTestAtiServerMan(), host.getTestCheckImeiClientMan() , host.getTestCheckImeiServerMan(), host.getTestLuServerMan());
         frame.setVisible(true);
 
         // closing the connection form
@@ -243,6 +244,8 @@ public class ConnectionForm extends JFrame {
             TestCheckImeiClientManMBean checkImeiClient = JMX.newMBeanProxy(mbsc, mbeanNameCheckImeiClient, TestCheckImeiClientManMBean.class, false);
             ObjectName mbeanNameCheckImeiServer = new ObjectName(tagDomain + ":type=TestCheckImeiServerMan");
             TestCheckImeiServerManMBean checkImeiServer = JMX.newMBeanProxy(mbsc, mbeanNameCheckImeiServer, TestCheckImeiServerManMBean.class, false);
+            ObjectName mbeanNameLuServer = new ObjectName(tagDomain + ":type=TestLuServerMan");
+            TestLuServerManMBean luServer = JMX.newMBeanProxy(mbsc, mbeanNameLuServer, TestLuServerManMBean.class, false);
 
             // checking if MBean is workable
             host.getInstance_L1_Value();
@@ -251,7 +254,7 @@ public class ConnectionForm extends JFrame {
             SimulatorGuiForm frame = new SimulatorGuiForm();
             mbsc.addNotificationListener(mbeanNameTesterHost, frame, null, null);
             frame.startHost(appName + "-remote", true, null, host, m3ua, dialogic, sccp, map, cap, ussdClient, ussdServer,
-                    smsClient, smsServer, capScf, capSsf, atiClient, atiServer, checkImeiClient, checkImeiServer);
+                    smsClient, smsServer, capScf, capSsf, atiClient, atiServer, checkImeiClient, checkImeiServer, luServer);
             frame.setVisible(true);
 
             // closing the connection form
