@@ -23,6 +23,7 @@
 package org.mobicents.protocols.ss7.tools.simulator.level2;
 
 import org.apache.log4j.Level;
+import org.mobicents.protocols.ss7.indicator.GlobalTitleIndicator;
 import org.mobicents.protocols.ss7.indicator.NatureOfAddress;
 import org.mobicents.protocols.ss7.indicator.NumberingPlan;
 import org.mobicents.protocols.ss7.indicator.RoutingIndicator;
@@ -38,6 +39,7 @@ import org.mobicents.protocols.ss7.sccp.SccpStack;
 import org.mobicents.protocols.ss7.sccp.SccpProtocolVersion;
 import org.mobicents.protocols.ss7.sccp.impl.SccpStackImpl;
 import org.mobicents.protocols.ss7.sccp.impl.router.RouterImpl;
+import org.mobicents.protocols.ss7.sccp.parameter.EncodingScheme;
 import org.mobicents.protocols.ss7.sccp.parameter.GlobalTitle;
 import org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory;
 import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
@@ -363,7 +365,8 @@ public class SccpMan implements SccpManMBean, Stoppable {
             this.router.addRoutingAddress(2,
                     parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_DPC_AND_SSN, this.createGlobalTitle(""), opc, localSsn));
 
-            SccpAddress pattern = parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, this.createGlobalTitle("*"), 0,
+            SccpAddress pattern;
+            pattern = parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, this.createGlobalTitle("*"), 0,
                     0);
             String mask = "K";
             ((RouterImpl) this.router).addRule(1, RuleType.SOLITARY, null, OriginationType.LOCAL, pattern, mask, 1,
@@ -371,6 +374,20 @@ public class SccpMan implements SccpManMBean, Stoppable {
             pattern = parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, this.createGlobalTitle("*"), 0, 0);
             mask = "R";
             ((RouterImpl) this.router).addRule(2, RuleType.SOLITARY, null, OriginationType.REMOTE, pattern, mask, 2,
+                    -1, null, 0);
+
+            //---------------------------------------------------------
+            // added by max
+
+            pattern = parameterFactory.createSccpAddress(RoutingIndicator.ROUTING_BASED_ON_GLOBAL_TITLE, this.createISDNMobileGlobalTitle("*"), 0, 0);
+
+            mask = "K";
+            ((RouterImpl) this.router).addRule(3, RuleType.SOLITARY, null, OriginationType.LOCAL, pattern, mask, 1,
+                    -1, null, 0);
+
+
+            mask = "R";
+            ((RouterImpl) this.router).addRule(4, RuleType.SOLITARY, null, OriginationType.REMOTE, pattern, mask, 2,
                     -1, null, 0);
         }
     }
@@ -409,6 +426,13 @@ public class SccpMan implements SccpManMBean, Stoppable {
         }
     }
 
+    /*
+    public SccpAddress createSCCPAddress(RoutingIndicator ri, GlobalTitleIndicator gti, String address, NumberingPlan numberingPlan, NatureOfAddress noa, EncodingScheme encScheme){
+        gt = parameterFactory.createGlobalTitle(address,0,numberingPlan,encScheme, noa);
+        parameterFactory.createSccpAddress(
+    }
+    */
+
     public GlobalTitle createGlobalTitle(String address) {
         GlobalTitle gt = null;
         switch (this.testerHost.getConfigurationData().getSccpConfigurationData().getGlobalTitleType().intValue()) {
@@ -429,6 +453,30 @@ public class SccpMan implements SccpManMBean, Stoppable {
                 gt = this.parameterFactory.createGlobalTitle(address,this.testerHost.getConfigurationData().getSccpConfigurationData()
                         .getTranslationType(), this.testerHost.getConfigurationData().getSccpConfigurationData()
                         .getNumberingPlan(),null, this.testerHost.getConfigurationData().getSccpConfigurationData()
+                        .getNatureOfAddress());
+                break;
+        }
+        return gt;
+    }
+
+    public GlobalTitle createISDNMobileGlobalTitle(String address) {
+        GlobalTitle gt = null;
+        switch (this.testerHost.getConfigurationData().getSccpConfigurationData().getGlobalTitleType().intValue()) {
+            case GlobalTitleType.VAL_NOA_ONLY:
+                gt = this.parameterFactory.createGlobalTitle(address,this.testerHost.getConfigurationData().getSccpConfigurationData()
+                        .getNatureOfAddress());
+                break;
+            case GlobalTitleType.VAL_TT_ONLY:
+                gt = this.parameterFactory.createGlobalTitle(address,this.testerHost.getConfigurationData().getSccpConfigurationData()
+                        .getTranslationType());
+                break;
+            case GlobalTitleType.VAL_TT_NP_ES:
+                gt = this.parameterFactory.createGlobalTitle(address,this.testerHost.getConfigurationData().getSccpConfigurationData()
+                        .getTranslationType(), NumberingPlan.ISDN_MOBILE, null);
+                break;
+            case GlobalTitleType.VAL_TT_NP_ES_NOA:
+                gt = this.parameterFactory.createGlobalTitle(address,this.testerHost.getConfigurationData().getSccpConfigurationData()
+                        .getTranslationType(), NumberingPlan.ISDN_MOBILE,null, this.testerHost.getConfigurationData().getSccpConfigurationData()
                         .getNatureOfAddress());
                 break;
         }

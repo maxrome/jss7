@@ -55,7 +55,7 @@ public class TestLuServerConfigurationData {
     protected AddressNature addressNature = AddressNature.international_number;
     protected NumberingPlan numberingPlan = NumberingPlan.ISDN;
     //protected String serviceCenterAddress = "";
-    protected String hlrAddress = "";
+    protected String hlrAddress = "393205100100";
     protected MapProtocolVersion mapProtocolVersion = new MapProtocolVersion(MapProtocolVersion.VAL_MAP_V3);
     protected int hlrSsn = 6;
     protected int vlrSsn = 8;

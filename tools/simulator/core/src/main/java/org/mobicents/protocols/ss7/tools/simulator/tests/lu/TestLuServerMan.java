@@ -23,6 +23,7 @@
 package org.mobicents.protocols.ss7.tools.simulator.tests.lu;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.mobicents.protocols.ss7.map.api.*;
 import org.mobicents.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.mobicents.protocols.ss7.map.api.errors.SMEnumeratedDeliveryFailureCause;
@@ -51,6 +52,7 @@ import org.mobicents.protocols.ss7.map.api.service.supplementary.SSCode;
 import org.mobicents.protocols.ss7.map.api.service.supplementary.SupplementaryCodeValue;
 import org.mobicents.protocols.ss7.map.api.smstpdu.*;
 import org.mobicents.protocols.ss7.map.smstpdu.*;
+import org.mobicents.protocols.ss7.sccp.parameter.SccpAddress;
 import org.mobicents.protocols.ss7.tcap.api.MessageType;
 import org.mobicents.protocols.ss7.tcap.asn.comp.Problem;
 import org.mobicents.protocols.ss7.tools.simulator.Stoppable;
@@ -78,7 +80,7 @@ import java.util.List;
  */
 public class TestLuServerMan extends TesterBase implements TestLuServerManMBean, Stoppable, MAPDialogListener, MAPServiceMobilityListener {
 
-
+    private static final Logger logger = Logger.getLogger(TestLuServerMan.class);
 
     public static String SOURCE_NAME = "TestLuServer";
 
@@ -377,7 +379,7 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
         this.countAscResp = 0;
 
         MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
-        mapProvider.getMAPServiceLsm().acivate();
+        mapProvider.getMAPServiceMobility().acivate();
         //mapProvider.getMAPServiceSms().acivate();
         mapProvider.getMAPServiceMobility().addMAPServiceListener(this);
 
@@ -1162,34 +1164,83 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
     }
 
 
+    MAPDialogMobility updateLocationDialog;
 
     /* Monility listener methods */
 
     @Override
-    public void onUpdateLocationRequest(UpdateLocationRequest ind) {
+    public void onUpdateLocationRequest(UpdateLocationRequest ind){
         if (!isStarted)
             return;
 
-        this.testerHost.sendNotif(SOURCE_NAME, "Rcvd: updateLocationRequest", "", Level.INFO);
+
 
 
 
         MAPDialogMobility curDialog = ind.getMAPDialog();
+
+        //save this dialog, it will be used for updateLocationResponse
+        updateLocationDialog = curDialog;
+
+
+
+
+
 
         long invokeId = ind.getInvokeId();
 
         IMSI imsi = ind.getImsi();
         ISDNAddressString vlrNumber = ind.getVlrNumber();
         ISDNAddressString mscNumber = ind.getMscNumber();
-        System.out.println("IMSI="+imsi.toString());
-        System.out.println("VLR_NUMBER="+vlrNumber.toString());
-        System.out.println("MSC_NUMBER="+mscNumber.toString());
+
+
+        logger.info("IMSI="+imsi.toString());
+        logger.info("VLR_NUMBER=" + vlrNumber.toString());
+        logger.info("MSC_NUMBER=" + mscNumber.toString());
+
+        String userData = "IMSI="+imsi.toString() + " VLR_NUMBER=" + vlrNumber.toString() + " MSC_NUMBER=" + mscNumber.toString();
+
+        this.testerHost.sendNotif(SOURCE_NAME, "Rcvd: UpdateLocationRequest", userData, Level.INFO);
 
 
 
 
 
         MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
+        SccpAddress destAddr = this.mapMan.createDestAddress(ind.getVlrNumber().getAddress(), 7);
+        SccpAddress origAddr = this.mapMan.createOrigAddress();
+
+
+        //SccpAddress callingPartyAddress = this.testerHost.getSccpMan().createCallingPartyAddress();
+        //SccpAddress calledPartyAddress = this.testerHost.getSccpMan().createCalledPartyAddress(vlrNumber.toString(),7);
+        //SccpAddress calledPartyAddress = this.testerHost.getSccpMan().createCalledPartyAddress();
+
+
+        /*
+        MAPDialogMobility newDialog;
+
+        try {
+            //create the new dialog
+            newDialog = mapProvider.getMAPServiceMobility().createNewDialog(getNetworkLocUpContext(), origAddr, null, destAddr, null);
+        }
+        catch(MAPException e){
+            this.testerHost.sendNotif(SOURCE_NAME, "Exception when creating new dialog for send InsertSubscribeDataRequest : " + e.getMessage(), e, Level.ERROR);
+            e.printStackTrace();
+            return;
+
+        }
+        */
+
+
+        /*
+        this.testerHost.getConfigurationData().getSccpConfigurationData().getNumberingPlan();
+        this.testerHost.getConfigurationData().getSccpConfigurationData().getNatureOfAddress();
+        this.testerHost.getConfigurationData().getTestLuServerConfigurationData().getHLRAddress();
+        */
+
+
+
+
         //TODO msisdn da parametrizzare, magari nella form di configurazione del test
         ISDNAddressString msisdn = mapProvider.getMAPParameterFactory().createISDNAddressString(AddressNature.international_number,
                 NumberingPlan.ISDN, "393203350745");
@@ -1207,27 +1258,56 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
         teleserviceList.add(mapProvider.getMAPParameterFactory().createExtTeleserviceCode(TeleserviceCodeValue.telephony));
 
         ArrayList<ExtSSInfo> provisionedSS = new ArrayList<ExtSSInfo>();
-        /*
+
+
         SSCode ssCode = mapProvider.getMAPParameterFactory().createSSCode(SupplementaryCodeValue.allForwardingSS);
         ExtTeleserviceCode teleserviceCode = mapProvider.getMAPParameterFactory().createExtTeleserviceCode(TeleserviceCodeValue.telephony);
-        ExtBasicServiceCode basicServiceCode = mapProvider.getMAPParameterFactory().createExtBasicServiceCode(ExtTelese);
-        ExtSSSTatus ssStatus = mapProvider.getMAPParameterFactory().createExtSSStatus(true,false,true,false);
-        ExtForwFeature = mapProvider.getMAPParameterFactory().createExtForwFeature(basicServiceCode,ssStatus,)
-        mapProvider.getMAPParameterFactory().createExtForwInfo(ssCode)
-        provisionedSS.add(mapProvider.getMAPParameterFactory().createExtSSInfo())
-        */
-        ArrayList<ZoneCode> regionalSubscriptionData = new ArrayList<ZoneCode>();
+        ExtBasicServiceCode basicServiceCode = mapProvider.getMAPParameterFactory().createExtBasicServiceCode(teleserviceCode);
+        ExtSSStatus ssStatus = mapProvider.getMAPParameterFactory().createExtSSStatus(true,false,true,false);
 
-        ArrayList<VoiceBroadcastData> vbsSubscriptionData = new ArrayList<VoiceBroadcastData>();
+        ISDNAddressString forwardedToNumber = mapProvider.getMAPParameterFactory().createISDNAddressString(AddressNature.international_number,NumberingPlan.ISDN,"393331231234");
 
-        ArrayList<VoiceGroupCallData> vgcsSubscriptionData = new ArrayList<VoiceGroupCallData>();
+        //ExtForwOptions forwOptions = mapProvider.getMAPParameterFactory().
 
-        //VlrCamelSubscriptionInfo vlrCamelSubscriptionInfo = mapProvider.getMAPParameterFactory().createVlrCamelSubscriptionInfo()
+        ExtForwFeature forwFeature = mapProvider.getMAPParameterFactory().createExtForwFeature(basicServiceCode,ssStatus,forwardedToNumber,null,null,null,null,null);
+
+        ArrayList<ExtForwFeature> extForwFeatures = new ArrayList<ExtForwFeature>();
+        extForwFeatures.add(forwFeature);
+
+        ExtForwInfo extForwInfo = mapProvider.getMAPParameterFactory().createExtForwInfo(ssCode,extForwFeatures,null);
+
+        ExtSSInfo extSSInfo = mapProvider.getMAPParameterFactory().createExtSSInfo(extForwInfo);
+
+
+
+
+        provisionedSS.add(extSSInfo);
+
+
+
+
+        //ArrayList<ZoneCode> regionalSubscriptionData = new ArrayList<ZoneCode>();
+        ArrayList<ZoneCode> regionalSubscriptionData = null;
+
+        //ArrayList<VoiceBroadcastData> vbsSubscriptionData = new ArrayList<VoiceBroadcastData>();
+        ArrayList<VoiceBroadcastData> vbsSubscriptionData = null;
+
+        //ArrayList<VoiceGroupCallData> vgcsSubscriptionData = new ArrayList<VoiceGroupCallData>();
+        ArrayList<VoiceGroupCallData> vgcsSubscriptionData = null;
+
 
         VlrCamelSubscriptionInfo vlrCamelSubscriptionInfo = null;
 
-        try{
 
+        SccpAddress callingPartyAddress = this.testerHost.getSccpMan().createCallingPartyAddress();
+//        SccpAddress calledPartyAddress = this.testerHost.getSccpMan().createCalledPartyAddress(vlrNumber.toString(),7);
+//        SccpAddress calledPartyAddress = this.testerHost.getSccpMan().createCalledPartyAddress();
+
+        curDialog.setLocalAddress(callingPartyAddress);
+
+
+        try{
+            //newDialog.addInsertSubscriberDataRequest(null,
             curDialog.addInsertSubscriberDataRequest(null,
                     msisdn,
                     category,
@@ -1244,6 +1324,7 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
 
 
             curDialog.send();
+            //newDialog.send();
             this.testerHost.sendNotif(SOURCE_NAME, "Sent: InsertSubscribeDataRequest", "", Level.INFO);
         } catch (MAPException e) {
             this.testerHost.sendNotif(SOURCE_NAME, "Exception when invoking addInsertSubscribeDataRequest : " + e.getMessage(), e, Level.ERROR);
@@ -1326,9 +1407,13 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
         //useful to reply with an error messge
         //mapProvider.getMAPErrorMessageFactory().createMAPErrorMessageSMDeliveryFailure()
 
+
+        SccpAddress callingPartyAddress = this.testerHost.getSccpMan().createCallingPartyAddress();
+        curDialog.setLocalAddress(callingPartyAddress);
+
         try{
             curDialog.addSendAuthenticationInfoResponse(invokeId, authSetList, null, null);
-            curDialog.send();
+            curDialog.close(false);
             this.testerHost.sendNotif(SOURCE_NAME, "Sent: sendAuthenticationInfoResponse", "", Level.INFO);
         } catch (MAPException e) {
             this.testerHost.sendNotif(SOURCE_NAME, "Exception when invoking addSendAuthenticationInfoResponse : " + e.getMessage(), e, Level.ERROR);
@@ -1408,18 +1493,23 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
 
         MAPDialogMobility curDialog = response.getMAPDialog();
 
+
+
         long invokeId = response.getInvokeId();
 
         MAPProvider mapProvider = this.mapMan.getMAPStack().getMAPProvider();
 
+        if (response.getBearerServiceList() != null) {
+            for (ExtBearerServiceCode bs : response.getBearerServiceList()) {
 
-        for (ExtBearerServiceCode bs : response.getBearerServiceList()){
-            System.out.println("BearerService: " + bs.getBearerServiceCodeValue().toString());
+
+                logger.info("BearerService: " + bs.getBearerServiceCodeValue().toString());
+            }
         }
 
-        System.out.println("ODBGeneralData: "+response.getODBGeneralData().toString());
+        logger.info("ODBGeneralData: " + response.getODBGeneralData());
 
-        System.out.println("Supported camel phases: "+response.getSupportedCamelPhases().toString());
+        logger.info("Supported camel phases: " + response.getSupportedCamelPhases());
 
         //this.testerHost.getConfigurationData().getTestLuServerConfigurationData().getHlrSsn()
 
@@ -1429,8 +1519,13 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
 
 
         try {
+
+//            updateLocationDialog.addUpdateLocationResponse(invokeId, hlrNumber, null, false, false);
+//            updateLocationDialog.send();
+
             curDialog.addUpdateLocationResponse(invokeId, hlrNumber, null, false, false);
-            curDialog.send();
+            //curDialog.send();
+            curDialog.close(false);
             this.testerHost.sendNotif(SOURCE_NAME, "Sent: UpdateLocationResponse", "", Level.INFO);
         } catch (MAPException e) {
             this.testerHost.sendNotif(SOURCE_NAME, "Exception when invoking addUpdateLocationResponse : " + e.getMessage(), e, Level.ERROR);
@@ -1470,71 +1565,50 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
     }
 
 
-    /* LSMListener methods */
-    /*
-    @Override
-    public void onProvideSubscriberLocationRequest(ProvideSubscriberLocationRequest ind) {
-        if (!isStarted)
-            return;
-
-        MAPDialogLsm curDialog = ind.getMAPDialog();
-        //MAPDialogSms curDialog = ind.getMAPDialog();
-        long invokeId = ind.getInvokeId();
-
-
-
-        this.testerHost.sendNotif(SOURCE_NAME, "Rcvd: subscriberLocationRequest", "", Level.DEBUG);
-
-
-        /*
-        SM_RP_DA da = ind.getSM_RP_DA();
-        SM_RP_OA oa = ind.getSM_RP_OA();
-        SmsSignalInfo si = ind.getSM_RP_UI();
-
-        if (da.getServiceCentreAddressDA() != null) { // mo message
-            this.onMoRequest(da, oa, si, curDialog);
-
-            try {
-                curDialog.addForwardShortMessageResponse(invokeId);
-                this.needSendClose = true;
-
-                this.countMoFsmResp++;
-                this.testerHost.sendNotif(SOURCE_NAME, "Sent: moResp", "", Level.DEBUG);
-            } catch (MAPException e) {
-                this.testerHost.sendNotif(SOURCE_NAME, "Exception when invoking addMoForwardShortMessageResponse : " + e.getMessage(), e, Level.ERROR);
-            }
+    private MAPApplicationContext getSubscriberDataMngtContext(){
+        MAPApplicationContextVersion vers;
+        //MAPApplicationContextName acn = MAPApplicationContextName.shortMsgMTRelayContext;
+        MAPApplicationContextName acn = MAPApplicationContextName.subscriberDataMngtContext;
+        //MAPApplicationContextName acn = MAPApplicationContextName.subscriberDataMngtContext;
+        switch (this.testerHost.getConfigurationData().getTestLuServerConfigurationData().getMapProtocolVersion().intValue()) {
+            case MapProtocolVersion.VAL_MAP_V1:
+                vers = MAPApplicationContextVersion.version1;
+                //acn = MAPApplicationContextName.shortMsgMORelayContext;
+                break;
+            case MapProtocolVersion.VAL_MAP_V2:
+                vers = MAPApplicationContextVersion.version2;
+                break;
+            default:
+                vers = MAPApplicationContextVersion.version3;
+                break;
         }
+        MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(acn, vers);
+        return  mapAppContext;
+    }
 
+    private MAPApplicationContext getNetworkLocUpContext(){
+        MAPApplicationContextVersion vers;
+        //MAPApplicationContextName acn = MAPApplicationContextName.shortMsgMTRelayContext;
+        MAPApplicationContextName acn = MAPApplicationContextName.subscriberDataMngtContext;
+        //MAPApplicationContextName acn = MAPApplicationContextName.networkLocUpContext;
+        switch (this.testerHost.getConfigurationData().getTestLuServerConfigurationData().getMapProtocolVersion().intValue()) {
+            case MapProtocolVersion.VAL_MAP_V1:
+                vers = MAPApplicationContextVersion.version1;
+                //acn = MAPApplicationContextName.shortMsgMORelayContext;
+                break;
+            case MapProtocolVersion.VAL_MAP_V2:
+                vers = MAPApplicationContextVersion.version2;
+                break;
+            default:
+                vers = MAPApplicationContextVersion.version3;
+                break;
+        }
+        MAPApplicationContext mapAppContext = MAPApplicationContext.getInstance(acn, vers);
+        return  mapAppContext;
     }
 
 
 
-    @Override
-    public void onProvideSubscriberLocationResponse(ProvideSubscriberLocationResponse provideSubscriberLocationResponseIndication) {
-
-    }
-
-    @Override
-    public void onSubscriberLocationReportRequest(SubscriberLocationReportRequest subscriberLocationReportRequestIndication) {
-
-    }
-
-    @Override
-    public void onSubscriberLocationReportResponse(SubscriberLocationReportResponse subscriberLocationReportResponseIndication) {
-
-    }
-
-    @Override
-    public void onSendRoutingInfoForLCSRequest(SendRoutingInfoForLCSRequest sendRoutingInforForLCSRequestIndication) {
-
-    }
-
-    @Override
-    public void onSendRoutingInfoForLCSResponse(SendRoutingInfoForLCSResponse sendRoutingInforForLCSResponseIndication) {
-
-    }
-    */
-    /* LSMListener methods end*/
 
     private class HostMessageData {
         public MtMessageData mtMessageData;
@@ -1559,23 +1633,5 @@ public class TestLuServerMan extends TesterBase implements TestLuServerManMBean,
         public String serviceCentreAddr;
     }
 
-    /*
-    @Override
-    public void onReadyForSMRequest(ReadyForSMRequest request) {
-        // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public void onReadyForSMResponse(ReadyForSMResponse response) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void onNoteSubscriberPresentRequest(NoteSubscriberPresentRequest request) {
-        // TODO Auto-generated method stub
-
-    }
-    */
 }

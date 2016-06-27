@@ -64,6 +64,8 @@ import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImei
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiClientStandardManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiServerManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.checkimei.TestCheckImeiServerStandardManMBean;
+import org.mobicents.protocols.ss7.tools.simulator.tests.lu.TestLuServerManMBean;
+import org.mobicents.protocols.ss7.tools.simulator.tests.lu.TestLuServerStandardManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsClientManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsClientStandardManMBean;
 import org.mobicents.protocols.ss7.tools.simulator.tests.sms.TestSmsServerManMBean;
@@ -227,6 +229,8 @@ public class MainCore {
         ObjectName nameAtiServerManMan = new ObjectName("SS7_Simulator_" + appName + ":type=TestAtiServerMan");
         ObjectName nameCheckImeiClientManMan = new ObjectName("SS7_Simulator_" + appName + ":type=TestCheckImeiClientMan");
         ObjectName nameCheckImeiServerManMan = new ObjectName("SS7_Simulator_" + appName + ":type=TestCheckImeiServerMan");
+        ObjectName nameLuServerManMan = new ObjectName("SS7_Simulator_" + appName + ":type=TestLuServerMan");
+
 
         // HtmlAdaptorServer
         HtmlAdaptorServer adapter = null;
@@ -302,6 +306,10 @@ public class MainCore {
             TestCheckImeiServerStandardManMBean checkImeiServerManMBean = new TestCheckImeiServerStandardManMBean(host.getTestCheckImeiServerMan(),
                     TestCheckImeiServerManMBean.class);
             mbs.registerMBean(checkImeiServerManMBean, nameCheckImeiServerManMan);
+
+            TestLuServerStandardManMBean luServerManMBean = new TestLuServerStandardManMBean(host.getTestLuServerMan(),
+                    TestLuServerManMBean.class);
+            mbs.registerMBean(luServerManMBean, nameLuServerManMan);
 
             System.out.println("All beans have been loaded...");
 
